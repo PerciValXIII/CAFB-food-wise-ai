@@ -1,0 +1,1 @@
+# Palette Project Backend FastAPI
