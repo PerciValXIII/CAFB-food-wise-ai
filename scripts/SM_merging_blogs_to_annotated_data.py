@@ -24,8 +24,7 @@ def merge_blogposts_with_annotations(
         'File Name': blog_df['title'],
         'Source Type': 'blog',
         'Content': blog_df['content'].apply(lambda x: x.replace("\n", " <|endoftext|> ").strip()),
-        'file type': 'link',
-        'Filepath': ''
+        'file type': 'link'
     })
 
     # Merge the DataFrames

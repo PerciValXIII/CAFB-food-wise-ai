@@ -67,9 +67,9 @@ def fill_file_content(
     # Save to CSV
     df.to_csv(csv_path, index=False)
 
-    # Save to Excel (for better viewing)
-    excel_path = csv_path.replace(".csv", ".xlsx")
-    df.to_excel(excel_path, index=False)
+    # # Save to Excel (for better viewing)
+    # excel_path = csv_path.replace(".csv", ".xlsx")
+    # df.to_excel(excel_path, index=False)
 
     print("Content column updated with <|endoftext|> formatting and saved to CSV & Excel.")
 
