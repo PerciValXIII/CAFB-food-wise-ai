@@ -1,3 +1,38 @@
+"""
+================================================================================
+Script Name: sm_ppt_structurization.py
+Author: Swattik Maiti
+Description:
+    This script processes all PowerPoint (.pptx) files located in:
+        mainfolder/data/sources/powerpoints/
+
+    For each presentation, it:
+    - Iterates through each slide
+    - Extracts the title and content from slide shapes
+    - Differentiates between 'paragraph' and 'bullet' text using indentation levels
+    - Structures each slide's content into a JSON object with the following keys:
+        - filename
+        - slide_number
+        - slide_title
+        - content: list of text blocks with 'type' (paragraph/bullet) and 'text'
+
+    Each slide is represented as a row in the final CSV:
+        mainfolder/data/supabase_structured_data/parsed_ppt_slides.csv
+
+    The CSV contains the following columns:
+        - file_id      (e.g., ppt_001)
+        - file_name    (original .pptx filename)
+        - slide_number
+        - content_json (JSON structure of slide content)
+        - file_type    (always set to "powerpoint")
+
+Dependencies:
+    - python-pptx
+    - pandas
+================================================================================
+"""
+
+
 import os
 import json
 import pandas as pd

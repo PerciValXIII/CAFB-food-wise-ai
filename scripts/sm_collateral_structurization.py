@@ -1,3 +1,36 @@
+"""
+================================================================================
+Script Name: sm_collateral_structurization.py
+Author: Swattik Maiti
+Description:
+    This script processes all PDF collateral files stored in:
+        mainfolder/data/sources/collateral/
+    
+    For each PDF, it:
+    - Extracts text content using PyMuPDF (fitz)
+    - Parses text page by page, splitting it into paragraphs
+    - Cleans and normalizes the extracted text (e.g., replaces non-breaking spaces)
+    - Structures the output as a single JSON object per file, with fields:
+        - file_id      (e.g., col_001)
+        - filename     (original PDF file name)
+        - content      (list of paragraphs with page and paragraph numbers)
+
+    Finally, the script saves a CSV file at:
+        mainfolder/data/parsed_collaterals.csv
+
+    The CSV contains one row per PDF with columns:
+        - file_id
+        - file_name
+        - content_json
+        - file_type      (always set to "collateral")
+
+Dependencies:
+    - PyMuPDF (fitz)
+    - pandas
+================================================================================
+"""
+
+
 import os
 import json
 import pandas as pd
