@@ -1,0 +1,45 @@
+# Web scraping
+requests==2.31.0
+beautifulsoup4
+lxml
+facebook-scraper
+tqdm
+
+# PDF Processing
+PyMuPDF==1.23.3
+pdf2image==1.16.3
+pytesseract==0.3.10
+opencv-python-headless==4.9.0.80
+pillow
+
+# AI Model for Image Detection
+ultralytics==8.1.0
+
+# Machine Learning for Similarity Analysis
+scikit-learn==1.3.0
+numpy==1.26.4
+pandas
+
+# PowerPoint Processing
+python-pptx
+
+# JSON & Schema Validation
+jsonschema
+
+# Social Media & Video Processing
+tweepy
+pytube
+youtube-transcript-api
+
+# Google API Services
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+
+# Selenium for Web Automation
+selenium
+
+# HTML Parsing & Cleaning
+lxml[html_clean]
+lxml_html_clean

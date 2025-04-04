@@ -1,0 +1,6 @@
+numpy
+scikit-learn
+python-pptx
+pillow
+python-pptx
+jsonschema

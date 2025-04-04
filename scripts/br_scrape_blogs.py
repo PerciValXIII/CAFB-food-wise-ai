@@ -14,13 +14,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException
 
 # Define relative paths
-BASE_PATH = "../Outputs"
+BASE_PATH = "CAFB-DATA-DUMP/CAFBrain-Dataset"
 TEXT_SAVE_PATH = os.path.join(BASE_PATH, "text", "blog_posts.jsonl")
 IMAGE_SAVE_PATH = os.path.join(BASE_PATH, "images")
 IMAGE_METADATA_PATH = os.path.join(IMAGE_SAVE_PATH, "image_data.jsonl")
 
 # Base blog URL
-BASE_URL = "https://www.capitalareafoodbank.org/blog/2025/..."
+BASE_URL = "https://www.capitalareafoodbank.org/blog/"
 
 # Configure Selenium WebDriver (Headless Mode)
 chrome_options = Options()

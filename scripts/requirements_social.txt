@@ -1,0 +1,14 @@
+tweepy
+pandas
+requests 
+tqdm
+facebook-scraper
+lxml[html_clean] 
+lxml_html_clean
+pytube 
+youtube-transcript-api
+google-api-python-client
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2
+pysrt
