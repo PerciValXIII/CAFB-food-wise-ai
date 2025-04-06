@@ -14,6 +14,7 @@ from typing import List
 # from src.services.logging import log_api_event
 from src.services.utils import *
 from src.services.table_classes import *
+from src.services.train import *
 from src.services.schema import *
 from src.services.backup import *
 from src.services.s3_handler import S3Handler
@@ -83,4 +84,60 @@ def login(user_info: LoginSchema, db: Session = Depends(get_db),token: str = Dep
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Login failed")
+    
+@app.post("/data/train", tags=["Train"])
+def train(db: Session = Depends(get_db),token: str = Depends(verify_token)):
+    try:
+        train_blog(db)
+        train_ppt(db)
+        train_pdf(db)
+        train_image(db)
+        db.commit()
+        return ResponseModel(message="Training complete.")#{"status": "success", "message": "Training complete."}   
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Train failed")
+
+
+@app.post("/data/search", tags=["Search"])
+def search_similar_documents(
+    req: SearchRequest,
+    db: Session = Depends(get_db),
+    token: str = Depends(verify_token)
+):
+    try:
+
+        # Step 1: Convert input query to embeddings
+        embedding_resp = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=req.query,
+            encoding_format="float"
+        )
+        embedding = embedding_resp.data[0].embedding
+
+        # Step 2: Search in each collection and gather top results
+        all_results = []
+        for collection in req.collections:
+            if collection in ["ppt","pdf","blog","image"]:
+                try:
+                    result = qdrant_client.search(
+                        collection_name=collection,
+                        query_vector=embedding,
+                        limit=req.top_n_each
+                    )
+                    all_results.extend(result)
+                except Exception as e:
+                    print(e)
+            else:
+                return ResponseModel(message=f"The collection {collection} is not found in the vector DB")
+        all_results.sort(key=lambda x: x.score, reverse=True)
+        return {"status": "success", "results": all_results[:req.top_n_total]}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Similarity search failed.")
 

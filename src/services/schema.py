@@ -17,3 +17,8 @@ class SignupSchema(BaseModel):
     password: str
     role:str
 
+class SearchRequest(BaseModel):
+    query: str
+    collections: List[str]
+    top_n_each: int = 5
+    top_n_total: int = 10

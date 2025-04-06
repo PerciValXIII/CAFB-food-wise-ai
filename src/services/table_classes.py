@@ -43,3 +43,16 @@ class Generic(Base):
 class Image(Base):
     __table__ = Table('image_data', Base.metadata,
                       schema=schema, autoload_with=engine)
+    
+class BlogData(Base):
+    __table__ = Table('blog_data', Base.metadata,
+                      schema=schema, autoload_with=engine)
+    
+class PptData(Base):
+    __table__ = Table('ppt_data', Base.metadata,
+                      schema=schema, autoload_with=engine)
+    
+class PdfData(Base):
+    __table__ = Table('pdf_data', Base.metadata,
+                      schema=schema, autoload_with=engine)
+    
