@@ -195,7 +195,7 @@ class S3Handler:
         
         return bucket_name, object_key
 
-    def create_presigned_url(self,bucket_name, object_name, expiration=10):
+    def create_presigned_url(self,bucket_name, object_name, content_type ,expiration=10):
 
         # Generate a presigned URL for the S3 object
         #s3_client = boto3.client('s3')
@@ -204,7 +204,7 @@ class S3Handler:
                                                         Params={'Bucket': bucket_name,
                                                                 'Key': object_name,
                                                                 'ResponseContentDisposition': 'inline',
-                                                                'ResponseContentType': 'image/png'},
+                                                                'ResponseContentType': content_type},
                                                         ExpiresIn=expiration)
         except ClientError as e:
             #logging.error(e)

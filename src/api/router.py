@@ -108,7 +108,6 @@ def search_similar_documents(
     token: str = Depends(verify_token)
 ):
     try:
-
         # Step 1: Convert input query to embeddings
         embedding_resp = client.embeddings.create(
             model="text-embedding-3-small",
@@ -117,21 +116,62 @@ def search_similar_documents(
         )
         embedding = embedding_resp.data[0].embedding
 
+        # Initialize S3
+        s3_handler.connect()
+        print("connected")
+
+        BUCKET_NAME = "cfab"
+
         # Step 2: Search in each collection and gather top results
         all_results = []
         for collection in req.collections:
-            if collection in ["ppt","pdf","blog","image"]:
+            if collection in ["ppt", "pdf", "blog", "image", "pdf_chunk", "ppt_chunk"]:
                 try:
                     result = qdrant_client.search(
                         collection_name=collection,
                         query_vector=embedding,
                         limit=req.top_n_each
                     )
+
+                    # Add S3 URL to payload if applicable
+                    for item in result:
+                        payload = item.payload
+                        if "source_type" in payload and "file_id" in payload:
+                            source_type = payload["source_type"]
+
+                            # Determine content type
+                            if source_type == "image":
+                                file_name = "images/"+ payload["file_id"]
+                                content_type = "image/png"
+                            elif source_type == "pdf":
+                                file_name = "on_premise_data/collateral/"+payload["file_name"]
+                                content_type = "application/pdf"
+                            elif source_type == "ppt":
+                                file_name = "on_premise_data/powerpoints/"+payload["file_name"]
+                                content_type = "application/vnd.ms-powerpoint"
+                            else:
+                                content_type = "application/octet-stream"
+                                continue
+
+                            # Create presigned URL
+                            presigned_url = s3_handler.create_presigned_url(
+                                bucket_name=BUCKET_NAME,
+                                object_name=file_name,
+                                expiration=60 * 5,  # 5 minutes
+                                content_type=content_type
+                            )
+
+
+                            # Attach to payload
+                            item.payload["presigned_url"] = presigned_url
+
                     all_results.extend(result)
+
                 except Exception as e:
                     print(e)
             else:
                 return ResponseModel(message=f"The collection {collection} is not found in the vector DB")
+
         all_results.sort(key=lambda x: x.score, reverse=True)
         return {"status": "success", "results": all_results[:req.top_n_total]}
 
@@ -141,3 +181,14 @@ def search_similar_documents(
         print(e)
         raise HTTPException(status_code=500, detail="Similarity search failed.")
 
+
+@app.post("/data/predict", tags=["Predict"])
+def train(user_prompt:str,system_prompt:str,model: Optional[str] = "gpt-4o-mini", db: Session = Depends(get_db),token: str = Depends(verify_token)):
+    try:
+        output = simple_gpt(user_prompt,system_prompt,model)
+        return ResponseModel(message="Answer generated",payload={"content":output})#{"status": "success", "message": "Training complete."}   
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Generation failed")

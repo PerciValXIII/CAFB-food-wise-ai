@@ -794,13 +794,13 @@ def cleanup_output_dir(directory_path: str):
     if os.path.exists(directory_path):
         shutil.rmtree(directory_path)  # removes the entire directory
         os.makedirs(directory_path)
-def simple_gpt(user_prompt: str,system_prompt:str) -> str:
+def simple_gpt(user_prompt: str,system_prompt:str,model:str="gpt-4o-mini") -> str:
     """
     Extract the relevant entities from user input using OpenAI chat completion.
     We add logic for picking up 'location' and 'radius'.
     """
     response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=model,
         messages=[#location_route
             {
                 "role": "system",
