@@ -13,6 +13,13 @@ if "chat_history" not in st.session_state:
 st.title("FoodWise Chatbot")
 st.markdown("Ask me something and I’ll search for matching images from the knowledge base.")
 
+
+# --- Side Bar Upload files ---
+st.sidebar.header("Upload Files")
+uploaded_files = st.sidebar.file_uploader(
+    "Drag and drop files here", accept_multiple_files=True
+)
+
 # --- Content type selection ---
 st.subheader("Select content type")
 content_options = {
