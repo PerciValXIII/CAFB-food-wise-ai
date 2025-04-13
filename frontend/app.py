@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_chat import message
 from services.api_client import search_data
+from renderer import render_result
 
 st.set_page_config(page_title="FoodWise AI Assistant", layout="wide")
 
@@ -8,53 +9,76 @@ st.set_page_config(page_title="FoodWise AI Assistant", layout="wide")
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+# --- Title & Instructions ---
 st.title("FoodWise Chatbot")
 st.markdown("Ask me something and I’ll search for matching images from the knowledge base.")
 
-# Sidebar for file uploads (optional for future use)
-st.sidebar.header("Upload Files")
-uploaded_files = st.sidebar.file_uploader(
-    "Drag and drop files here", accept_multiple_files=True
+# --- Content type selection ---
+st.subheader("Select content type")
+content_options = {
+    "Q&A": "qa",
+    "Blog": "blog",
+    "PPT": "ppt",
+    "PDF": "pdf",
+    "Image": "image"
+}
+
+# Streamlit radio button UI
+selected_type = st.radio(
+    label="Choose content type:",
+    options=list(content_options.keys()),
+    horizontal=True,
+    key="content_type_selection"
 )
 
-# Chat input
+# --- Chat Input ---
 user_input = st.chat_input("Type your query here...")
 
-# Handle user input
+# --- Handle User Input ---
 if user_input:
-    # Add user message to chat history
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+    if not selected_type:
+        st.warning("⚠️ Please select a content type before submitting your query.")
+    else:
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-    # Call API and get result
-    with st.spinner("Searching for results..."):
-        result = search_data(user_input, collections=["image"])
+        with st.spinner("Searching for results..."):
+            # Map selection to backend value
+            selected_key = content_options[selected_type]
 
-        if "error" in result:
-            response_text = f"API Error: {result['error']}"
-            st.session_state.chat_history.append({"role": "bot", "content": response_text})
-        else:
-            results = result.get("results", [])
-            if not results:
-                response_text = "🤷 No results found."
+            # Map selected content type to collections
+            collection_map = {
+                "image": ["image"],
+                "qa": ["blog", "ppt", "pdf"],
+                "blog": ["blog", "ppt", "pdf"],
+                "ppt": ["blog", "ppt", "pdf"],
+                "pdf": ["blog", "ppt", "pdf"]
+            }
+            collections = collection_map.get(selected_key, ["blog", "ppt", "pdf"])
+
+            result = search_data(
+                query=user_input,
+                collections=collections,
+                top_n_each=5,
+                top_n_total=10,
+                content_type=selected_key
+            )
+
+            if "error" in result:
+                response_text = f"API Error: {result['error']}"
                 st.session_state.chat_history.append({"role": "bot", "content": response_text})
             else:
-                response_text = f"Found {len(results)} results for: *{user_input}*"
-                st.session_state.chat_history.append({"role": "bot", "content": response_text})
+                results = result.get("results", [])
+                if not results:
+                    response_text = "🤷 No results found."
+                    st.session_state.chat_history.append({"role": "bot", "content": response_text})
+                else:
+                    response_text = f"Found {len(results)} results for: *{user_input}*"
+                    st.session_state.chat_history.append({"role": "bot", "content": response_text})
 
-                # Display each result in an expandable card
-                for i, item in enumerate(results, 1):
-                    payload = item.get("payload", {})
-                    file_id = payload.get("file_id", "N/A")
-                    description = payload.get("chunk_text", "No description available.")
-                    score = item.get("score", 0)
-                    image_url = payload.get("presigned_url")
+                    for i, item in enumerate(results, 1):
+                        render_result(item)
 
-                    with st.expander(f"{i}. {file_id} — Score: {score:.2f}"):
-                        if image_url:
-                            st.image(image_url, use_column_width=True)
-                        st.markdown(f"{description}")
-
-# Display full chat history in bubbles
+# --- Display Chat Bubbles ---
 for i, chat in enumerate(st.session_state.chat_history):
     is_user = chat["role"] == "user"
     message(chat["content"], is_user=is_user, key=f"{chat['role']}_{i}")

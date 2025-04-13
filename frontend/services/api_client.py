@@ -3,7 +3,7 @@
 import requests
 from frontend.config import API_URL, BEARER_TOKEN
 
-def search_data(query: str, collections: list[str], top_n_each=5, top_n_total=10):
+def search_data(query: str, collections: list[str], top_n_each=5, top_n_total=10, content_type=None):
     headers = {
         "Authorization": f"Bearer {BEARER_TOKEN}",
         "Content-Type": "application/json"
@@ -12,13 +12,16 @@ def search_data(query: str, collections: list[str], top_n_each=5, top_n_total=10
         "query": query,
         "collections": collections,
         "top_n_each": top_n_each,
-        "top_n_total": top_n_total
+        "top_n_total": top_n_total,
     }
+
+    if content_type:
+        payload["type"] = content_type  # 👈 Add the content type to the request
 
     try:
         response = requests.post(API_URL, headers=headers, json=payload)
         print(f"API STATUS: {response.status_code}")
-        print("API RESPONSE:", response.text)  # full response
+        print("API RESPONSE:", response.text)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
