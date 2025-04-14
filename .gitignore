@@ -1,4 +1,13 @@
+# Ignore secrets and config that contains private keys
+.streamlit/secrets.toml
+
+# Standard Python ignores
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
 data/
 cookies/
 Outputs/
-frontend/config.py
