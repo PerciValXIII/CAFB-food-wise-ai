@@ -1,9 +1,48 @@
 # frontend/services/api_client.py
 
 import requests
-from frontend.config import API_URL, BEARER_TOKEN
+from frontend.config import API_URL, PPT_GEN_URL, PDF_GEN_URL, BEARER_TOKEN
 
-def search_data(query: str, collections: list[str], top_n_each=5, top_n_total=10, content_type=None):
+
+
+def generate_ppt_file(edited_data: dict):
+    print(edited_data)
+    try:
+        headers = {
+            "Authorization": f"Bearer {BEARER_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(PPT_GEN_URL, headers=headers, json=edited_data)
+        response.raise_for_status()
+
+        data = response.json()
+        link = data.get("payload", {}).get("link")
+        return {"google_slides_link": link}
+
+    except requests.RequestException as e:
+        print(f"PPT GENERATION ERROR: {e}")
+        return {"error": str(e)}
+
+
+def generate_pdf_file(edited_data: dict):
+    print(edited_data)
+    try:
+        headers = {
+            "Authorization": f"Bearer {BEARER_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(PDF_GEN_URL, headers=headers, json=edited_data)
+        response.raise_for_status()
+        data = response.json()
+        link = data.get("payload", {}).get("link")
+        return {"google_doc_link": link}
+    except requests.RequestException as e:
+        print(f"PDF GENERATION ERROR: {e}")
+        return {"error": str(e)}
+    
+
+
+def search_data(query: str, collections: list[str], top_n_each=5, top_n_total=10, types=None):
     headers = {
         "Authorization": f"Bearer {BEARER_TOKEN}",
         "Content-Type": "application/json"
@@ -13,10 +52,8 @@ def search_data(query: str, collections: list[str], top_n_each=5, top_n_total=10
         "collections": collections,
         "top_n_each": top_n_each,
         "top_n_total": top_n_total,
+        "types": types
     }
-
-    if content_type:
-        payload["type"] = content_type  # 👈 Add the content type to the request
 
     try:
         response = requests.post(API_URL, headers=headers, json=payload)
