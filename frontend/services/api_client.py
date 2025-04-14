@@ -1,7 +1,7 @@
 # frontend/services/api_client.py
 
 import requests
-from frontend.config import API_URL, PPT_GEN_URL, PDF_GEN_URL, BEARER_TOKEN
+from config import API_URL, PPT_GEN_URL, PDF_GEN_URL, BEARER_TOKEN
 
 
 
