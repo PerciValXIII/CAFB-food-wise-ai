@@ -2,3 +2,4 @@ data/
 cookies/
 Outputs/
 frontend/config.py
+.env
