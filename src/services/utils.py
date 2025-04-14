@@ -949,3 +949,42 @@ def simple_gpt(user_prompt: str,system_prompt:str,model:str="gpt-4o-mini") -> st
 
 # if __name__ == "__main__":
 #     main()
+
+
+def generate_text_content(query, chunk_data):
+    user_prompt = "Question: " + query + " Available context:\n" + "\n".join(chunk_data)
+    return simple_gpt(
+        user_prompt=user_prompt,
+        system_prompt=system_prompt_text,
+        model="gpt-4o"
+    )
+
+def generate_blog_content(query, chunk_data):
+    user_prompt = "Question: " + query + " Available context:\n" + "\n".join(chunk_data)    
+    return simple_gpt(
+        user_prompt=user_prompt,
+        system_prompt=system_prompt_blog,
+        model="gpt-4o"
+    )
+
+def generate_ppt_content(query, chunk_data):
+    user_prompt = "Question: " + query + " Available context:\n" + "\n".join(chunk_data)
+    return simple_gpt(
+        user_prompt=user_prompt,
+        system_prompt=system_prompt_ppt,
+        model="gpt-4o"
+    )
+
+def generate_image_content(query, chunk_data):
+    user_prompt = "Question: " + query + " Available context:\n" + "\n".join(chunk_data)
+    system_prompt = """
+You are generating alt-text/image description from context. Return JSON like:
+{"image_description": "Detailed, creative description of the image content based on the query and context"}
+Return only the JSON.
+"""
+    
+    return simple_gpt(
+        user_prompt=user_prompt,
+        system_prompt=system_prompt,
+        model="gpt-4o"
+    )

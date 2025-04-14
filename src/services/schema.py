@@ -22,3 +22,4 @@ class SearchRequest(BaseModel):
     collections: List[str]
     top_n_each: int = 5
     top_n_total: int = 10
+    types: Optional[str] = None
