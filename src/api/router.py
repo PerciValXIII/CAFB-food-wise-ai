@@ -379,3 +379,158 @@ def train(docx_data :dict , db: Session = Depends(get_db),token: str = Depends(v
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="PDF creation failed")
+
+import fitz
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_KEY"),
+    region_name='us-east-1'  
+)
+bucket_name="cfab"
+
+from io import BytesIO
+import json
+
+
+@app.post("/documents/upload", tags=["Document Upload"])
+def upload_documents(
+    files: List[UploadFile] = File(...),
+    db=Depends(get_db),
+    token: str = Depends(verify_token)
+):
+    allowed_exts = ["pdf", "pptx"]
+    uploaded_files = []
+    log_file = "uploaded_files.txt"
+
+    try:
+        def upload_to_s3(file_bytes: BytesIO, ext: str):
+            unique_id = uuid.uuid4().hex
+            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            filename = f"{timestamp}_{unique_id}.{ext}"
+            s3_key = f"on_premise_data/{'collateral' if ext == 'pdf' else 'powerpoints'}/{filename}"
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+                tmp.write(file_bytes.getvalue())
+                tmp_path = tmp.name
+
+            with open(tmp_path, "rb") as f:
+                s3.upload_fileobj(f, bucket_name, s3_key)
+
+            os.remove(tmp_path)
+            return filename
+
+        class CollateralPDFParser:
+            def __init__(self, pdf_path, filename):
+                self.pdf_path = pdf_path
+                self.file_name = filename
+
+            def parse_pdf(self, file_id):
+                content_blocks = []
+                doc = fitz.open(self.pdf_path)
+                for page_num, page in enumerate(doc, start=1):
+                    text = page.get_text("text")
+                    if not text.strip():
+                        continue
+                    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+                    for para_num, para_text in enumerate(paragraphs, start=1):
+                        content_blocks.append({
+                            "page": page_num,
+                            "paragraph": para_num,
+                            "text": para_text.replace("\u00a0", " ")
+                        })
+                return {
+                    "file_id": file_id,
+                    "file_name": self.file_name,
+                    "content_json": json.dumps({
+                        "file_id": file_id,
+                        "filename": self.file_name,
+                        "content": content_blocks
+                    }),
+                    "file_type": "collateral",
+                    "train": False
+                }
+
+        class PowerPointParser:
+            def __init__(self, ppt_path, filename):
+                self.ppt_path = ppt_path
+                self.file_name = filename
+                self.presentation = Presentation(ppt_path)
+
+            def parse_ppt(self, file_id):
+                data = []
+                for idx, slide in enumerate(self.presentation.slides, start=1):
+                    slide_title = ""
+                    content_blocks = []
+                    for shape in slide.shapes:
+                        if not shape.has_text_frame:
+                            continue
+                        for paragraph in shape.text_frame.paragraphs:
+                            para_text = paragraph.text.strip()
+                            if not para_text:
+                                continue
+                            if not slide_title:
+                                slide_title = para_text
+                                continue
+                            para_type = "bullet" if paragraph.level > 0 or para_text.startswith(("•", "-")) else "paragraph"
+                            content_blocks.append({"type": para_type, "text": para_text})
+                    structured_json = {
+                        "filename": self.file_name,
+                        "slide_number": idx,
+                        "slide_title": slide_title,
+                        "content": content_blocks
+                    }
+                    data.append({
+                        "file_id": file_id,
+                        "file_name": self.file_name,
+                        "slide_number": idx,
+                        "content_json": json.dumps(structured_json),
+                        "file_type": "powerpoint",
+                        "train": False
+                    })
+                return data
+
+        for file in files:
+            ext = file.filename.split(".")[-1].lower()
+            if ext not in allowed_exts:
+                raise HTTPException(status_code=400, detail=f"File {file.filename} has unsupported format.")
+
+            # Read file once
+            file_bytes = file.file.read()
+            file_stream = BytesIO(file_bytes)
+
+            # Upload to S3
+            filename = upload_to_s3(file_stream, ext)
+            file_id = f"{ext}_{uuid.uuid4().hex[:8]}"
+
+            # Temp file for parser
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+                tmp.write(file_bytes)
+                file_path = tmp.name
+
+            if ext == "pptx":
+                parser = PowerPointParser(file_path, filename)
+                records = parser.parse_ppt(file_id)
+                supabase.table("ppt_data").insert(records).execute()
+            elif ext == "pdf":
+                parser = CollateralPDFParser(file_path, filename)
+                record = parser.parse_pdf(file_id)
+                supabase.table("pdf_data").insert(record).execute()
+
+            uploaded_files.append(filename)
+            os.remove(file_path)
+
+            with open(log_file, "a") as f:
+                f.write(filename + "\n")
+
+        return {"message": "Upload complete", "uploaded_files": uploaded_files}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Document upload or parsing failed")
