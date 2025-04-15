@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_chat import message
-from services.api_client import search_data, generate_ppt_file, generate_pdf_file
+from services.api_client import search_data, generate_ppt_file, generate_pdf_file, upload_files
 from renderer import render_result, render_blog_as_markdown
 
 st.set_page_config(page_title="FoodWise AI Assistant", layout="wide")
@@ -13,11 +13,22 @@ if "chat_history" not in st.session_state:
 st.title("FoodWise Chatbot")
 st.markdown("Ask me something and I’ll search for matching images from the knowledge base.")
 
-# --- Side Bar Upload files ---
+
+# --- Side Bar Upload Files ---
 st.sidebar.header("Upload Files")
 uploaded_files = st.sidebar.file_uploader(
     "Drag and drop files here", accept_multiple_files=True
 )
+
+# New: Button to trigger file upload if files are selected
+if uploaded_files:
+    if st.sidebar.button("Upload Files to Database"):
+        with st.spinner("Uploading files..."):
+            response = upload_files(uploaded_files)
+            if "error" in response:
+                st.sidebar.error(f"Upload error: {response['error']}")
+            else:
+                st.sidebar.success("Files uploaded successfully!")
 
 # --- Content type selection ---
 st.subheader("Select content type")
