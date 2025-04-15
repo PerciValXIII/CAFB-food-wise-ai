@@ -8,6 +8,14 @@ FoodWise AI is an end-to-end intelligent content generation platform built to as
 
 ---
 
+## 🧱 Architecture Overview
+
+Here’s the high-level architecture of our end-to-end AI pipeline using RAG:
+
+![FoodWise AI Architecture](./architecture.png)
+
+---
+
 ## Key Features
 
 - **Multimodal RAG Pipeline**: Integrates structured documents, annotated images, and blogs into a unified semantic search system.
