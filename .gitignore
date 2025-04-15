@@ -11,3 +11,6 @@ build/
 data/
 cookies/
 Outputs/
+
+.env
+

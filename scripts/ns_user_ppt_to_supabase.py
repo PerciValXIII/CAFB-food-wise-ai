@@ -1,23 +1,52 @@
 import os
 import json
 import pandas as pd
+from dotenv import load_dotenv
 from pptx import Presentation
+import boto3
 from supabase import create_client, Client
 
+#loading env variables
+load_dotenv()
 
 # Supabase client setup
-SUPABASE_URL = "https://pogfmrabqzbgtkctmyoo.supabase.co"  
+SUPABASE_URL = os.getenv("SUPABASE_URL")   
 #service role secret key (not anon public)
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZ2ZtcmFicXpiZ3RrY3RteW9vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MzM4OTU5OSwiZXhwIjoyMDU4OTY1NTk5fQ.DX-g2m0Oa02KTPOKVKHaNLFSgMzl4hYjvP1sdvSV1XQ"  
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")  
 TABLE_NAME = "ppt_data"
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+aws_default_region = os.getenv("AWS_DEFAULT_REGION")
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ppt_dir = os.path.join(root_dir, "data", "sources", "powerpoints")
 output_csv = os.path.join(root_dir, "data", "supabase_structured_data", "extracted_ppts", "parsed_ppt_slides.csv")
+bucket_name = "cfab"
+s3_folder = "on_premise_data/powerpoints/"
 log_file = os.path.join(root_dir, "uploaded_files.txt")
 
 
 #Initializing Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+#Initialize s3 client
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name=aws_default_region  
+)
+
+#uploading user files to s3
+for filename in os.listdir(ppt_dir):
+    local_path = os.path.join(ppt_dir, filename)
+    
+    if os.path.isfile(local_path):
+        s3_path = os.path.join(s3_folder, filename).replace("\\", "/")  
+        print(f"Uploading {filename} to s3://{bucket_name}/{s3_path}")
+        
+        s3.upload_file(local_path, bucket_name, s3_path)
+
+print("Upload complete!")
 
 #checking supabase table records
 response = supabase.table(TABLE_NAME).select("file_name").execute()

@@ -17,3 +17,4 @@ Group project 605.pdf
 02_MLOps.pdf
 02_Python.pdf
 03_Containers.pdf
+Group project 605.pdf
