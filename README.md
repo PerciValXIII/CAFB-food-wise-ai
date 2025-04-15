@@ -8,7 +8,7 @@ FoodWise AI is an end-to-end intelligent content generation platform built to as
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Multimodal RAG Pipeline**: Integrates structured documents, annotated images, and blogs into a unified semantic search system.
 - **Smart Search**: Retrieves the most relevant content chunks using vector similarity.
@@ -18,7 +18,7 @@ FoodWise AI is an end-to-end intelligent content generation platform built to as
 
 ---
 
-## 🧠 Tech Stack
+## Tech Stack
 
 - **Frontend**: `Streamlit` (for chatbot interface and file uploads)
 - **Backend**: Python-based API for inference, generation, and search logic
@@ -30,7 +30,7 @@ FoodWise AI is an end-to-end intelligent content generation platform built to as
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```bash
 CAFB-FOOD-WISE-AI/
@@ -53,3 +53,12 @@ CAFB-FOOD-WISE-AI/
 ├── data/                        # Preloaded/processed datasets
 ├── cdk/                         # Infra-as-code (CDK for AWS)
 ├── README.md                    # You're here!
+
+## Team FoodWise AI
+1. [Adwaith Santosh](https://github.com/CoderAd1))
+2. [Swattik Maiti](https://github.com/swattikmaiti)
+3. [Neomi Sule](https://github.com/neomisule))
+4. [Dhwani Muni](https://github.com/DhwaniMuni))
+5. Emil George
+
+University of Maryland – AI and Food Insecurity Case Competition
