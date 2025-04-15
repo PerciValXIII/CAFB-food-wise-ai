@@ -57,10 +57,10 @@ CAFB-FOOD-WISE-AI/
 ```
 
 ## Team FoodWise AI
-1. [Adwaith Santosh](https://github.com/CoderAd1))
+1. [Adwaith Santosh](https://github.com/CoderAd1)
 2. [Swattik Maiti](https://github.com/swattikmaiti)
-3. [Neomi Sule](https://github.com/neomisule))
-4. [Dhwani Muni](https://github.com/DhwaniMuni))
+3. [Neomi Sule](https://github.com/neomisule)
+4. [Dhwani Muni](https://github.com/DhwaniMuni)
 5. Emil George
 
 University of Maryland – AI and Food Insecurity Case Competition
