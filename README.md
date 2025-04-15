@@ -30,6 +30,7 @@ FoodWise AI is an end-to-end intelligent content generation platform built to as
 
 ---
 
+
 ## Project Structure
 
 ```bash
@@ -53,6 +54,7 @@ CAFB-FOOD-WISE-AI/
 ├── data/                        # Preloaded/processed datasets
 ├── cdk/                         # Infra-as-code (CDK for AWS)
 ├── README.md                    # You're here!
+```
 
 ## Team FoodWise AI
 1. [Adwaith Santosh](https://github.com/CoderAd1))
@@ -62,3 +64,4 @@ CAFB-FOOD-WISE-AI/
 5. Emil George
 
 University of Maryland – AI and Food Insecurity Case Competition
+
